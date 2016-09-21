@@ -1,0 +1,12 @@
+<project>
+    <version>0.0.0</version>
+    <artifactId>example-project</artifactId>
+    <groupId>example.project</groupId>
+    <modelVersion>4.0.0</modelVersion>
+    <packaging>pom</packaging>
+    <modules>
+        <module>common-code</module>
+        <module>project-a</module>
+        <module>project-b</module>
+    </modules>
+</project>

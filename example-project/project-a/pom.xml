@@ -1,0 +1,17 @@
+<project>
+    <artifactId>project-a</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>example-project</artifactId>
+        <version>0.0.0</version>
+        <groupId>example.project</groupId>
+    </parent>
+
+    <dependencies>
+        <dependency>
+            <groupId>example.project</groupId>
+            <artifactId>common-code</artifactId>
+            <version>0.0.0</version>
+        </dependency>
+    </dependencies>
+</project>

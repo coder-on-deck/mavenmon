@@ -1,0 +1,9 @@
+<project>
+    <artifactId>project-b</artifactId>
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>example-project</artifactId>
+        <version>0.0.0</version>
+        <groupId>example.project</groupId>
+    </parent>
+</project>

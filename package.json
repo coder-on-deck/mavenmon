@@ -1,0 +1,29 @@
+{
+  "name": "maven-compile-diff",
+  "version": "0.0.0",
+  "dependencies": {
+    "async": "^1.5.2",
+    "chokidar": "^1.5.1",
+    "findup": "^0.1.5",
+    "fs-extra": "^0.30.0",
+    "klaw": "^1.2.0",
+    "lodash": "^4.13.1",
+    "log4js": "^0.6.36",
+    "minimist": "^1.2.0",
+    "node-find-files": "0.0.4",
+    "pom-parser": "^1.1.1",
+    "through2": "^2.0.1"
+  },
+  "scripts": {
+    "test": "standard",
+    "test:watch": "nodemon --exec 'npm run test --silent'",
+    "example" : "cd example-project && node ../watch.js . onchange.js"
+  },
+  "bin": {
+    "mavenmon": "watch.js"
+  },
+  "devDependencies": {
+    "nodemon": "^1.9.2",
+    "standard": "^7.1.2"
+  }
+}
