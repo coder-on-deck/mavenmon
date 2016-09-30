@@ -23,6 +23,5 @@ module.exports = function shouldWatchFolder (filepath) {
     console.log('should i ignore error', e)
     result = false
   }
-  // console.log('result for path', filepath, ' is ' , result )
   return result
 }

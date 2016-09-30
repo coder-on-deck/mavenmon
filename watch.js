@@ -53,7 +53,7 @@ require('./register-exceptions')
 /**
  * a function to decide if folder should be watched.
  */
-var shouldWatchFolder = require('./should-watch-folder')
+var shouldWatchFolder = require(argv.filter || './should-watch-folder')
 
 // read configuration
 var config = {}
@@ -81,7 +81,7 @@ if (fs.existsSync(onchangeLocation)) {
   logger.debug('onchangeLocation', onchangeLocation)
 } else {
   logger.info('using default onchange handler')
-  onchangeLocation = path.join(__dirname, 'default-on-change.js')
+  onchangeLocation = './default-on-change.js'
 }
 var onchange = require(onchangeLocation)
 
