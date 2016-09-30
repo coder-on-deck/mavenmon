@@ -139,8 +139,6 @@ function handleChange (type) {
 }
 
 logger.debug('starting walk')
-// var watchedFiles = require('./get-watched-files')(watchRoot)
-// logger.debug('watching', watchedFiles.length, 'files')
 
 // One-liner for current directory, ignores .dotfiles
 var watcher = chokidar.watch('.', {
@@ -160,8 +158,4 @@ var watcher = chokidar.watch('.', {
     logger.info('watching... you can start writing code')
   }, 1000)
 })
-// watcher.on('all', function(type, path){
-//   console.log(type, path);
-// })
-// watcher.add(watchedFiles)
 logger.info('setting up watch for [' + watchRoot + ']  please wait..')
