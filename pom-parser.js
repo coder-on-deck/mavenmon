@@ -3,6 +3,11 @@ var pomParser = require('pom-parser')
 var path = require('path')
 var logger = require('log4js').getLogger('pom-parser')
 
+/**
+ *
+ * @param {string} filepath
+ * @returns {QueueItem}
+ */
 module.exports = function (filepath) {
   return new Promise(function (resolve, reject) {
     var dir = findup.sync(filepath, 'pom.xml')

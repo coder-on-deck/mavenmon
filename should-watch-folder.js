@@ -16,6 +16,8 @@ module.exports = function shouldWatchFolder (filepath) {
       if (filepath.endsWith('.java') || filepath.endsWith('.class') || filepath.endsWith('.jar')) {
         result = true
       }
+    } else {
+      return true // if does not exist, watch it! otherwise will be ignored if readded. fixes issue where file is deleted.
     }
   } catch (e) {
     console.log('should i ignore error', e)

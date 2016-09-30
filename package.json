@@ -15,9 +15,13 @@
     "through2": "^2.0.1"
   },
   "scripts": {
-    "test": "standard",
+    "test": "standard --fix",
     "test:watch": "nodemon --exec 'npm run test --silent'",
-    "example" : "cd example-project && node ../watch.js . onchange.js"
+    "example" : "cd example-project && node ../watch.js . onchange.js",
+    "example:all" : "cd example-project && mvn install",
+    "project-a" : "cd example-project/project-a && node ../../watch.js .",
+    "test-chokidar" : "node test-chokidar.js"
+    
   },
   "bin": {
     "mavenmon": "watch.js"

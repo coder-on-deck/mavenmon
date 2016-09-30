@@ -1,40 +1,106 @@
 #!/usr/bin/env node
+
+/**
+ *
+ * Setup watched files.
+ *
+ * Invoke the watcher on each detected change.
+ *
+ */
+
+/**
+ * arguments from command line
+ */
 var argv = require('minimist')(process.argv.slice(2))
+
+/**
+ * a library to watch the files
+ */
 var chokidar = require('chokidar')
 
-var mavenmonPomParser = require('./pom-parser')
+/**
+ * path library
+ */
 var path = require('path')
-var logger = require('log4js').getLogger('watch-maven-project')
+
+/**
+ * logger
+ */
+var logger = require('log4js').getLogger('mavemon')
+logger.setLevel(argv.verbose ? 'ALL' : 'INFO')
+
+/**
+ * collection utility
+ */
 var _ = require('lodash')
-var config = {}
+
+/**
+ * helps with parsing the pom. not to be confused with the pom-parser library.
+ */
+var mavenmonPomParser = require('./pom-parser')
+
+/**
+ *
+ * @type {"fs"}
+ */
+var fs = require('fs')
+
+/**
+ * register global exceptions
+ */
 require('./register-exceptions')
+
+/**
+ * a function to decide if folder should be watched.
+ */
 var shouldWatchFolder = require('./should-watch-folder')
 
+// read configuration
+var config = {}
 var configFile = path.join(process.cwd(), '.nodemon.json')
-function reloadConfig () {
-  console.log('reloading configuration from', configFile)
+function reloadConfig () { //  support auto reload
+  logger.debug('reloading configuration from', configFile)
   try {
-    config = require(configFile)
-    console.log('config is', config)
+    config = _.merge(config, require(configFile)) // merge to keep reference. use null so lodash will remove key
+    logger.debug('config is', config)
   } catch (e) {
-    console.log(e)
+    logger.error('error reading configuration', e)
   }
 }
+chokidar.watch(configFile).on('all', reloadConfig) // reload on config change
 
-chokidar.watch(configFile).on('all', reloadConfig)
+if (fs.existsSync(configFile)) {
+  reloadConfig()
+}
 
-// reloadConfig()
-
+// list watched files
 var watchRoot = argv._[0] || path.resolve('.')  // by default use cwd
-console.log(argv._)
+logger.debug('watching args', argv._)
 var onchangeLocation = path.resolve(path.join(watchRoot, argv._[1] || './onchange.js'))
-console.log('onchangeLocation', onchangeLocation)
+if (fs.existsSync(onchangeLocation)) {
+  logger.debug('onchangeLocation', onchangeLocation)
+} else {
+  logger.info('using default onchange handler')
+  onchangeLocation = path.join(__dirname, 'default-on-change.js')
+}
 var onchange = require(onchangeLocation)
 
 var ready = false
 var queue = {}
+
+/**
+ * @typedef {object} QueueItem
+ * @property {string} dir
+ * @property {object} pom. Contains project.version, project.parent.version etc.. like a pom.xml model. NOTE! keys are in lower-case
+ * @property {string} jarfile - an estimation where the jarfile will be. (does not support custom maven configuration)
+ * @property {string} classfile - estimation where the classfile will be. (does not support custom maven configuration)
+ */
+/**
+ *
+ * @param {QueueItem} data
+ */
 function executeQueueItem (data) {
-  // console.log('handling change on ', path)
+  logger.debug('handling change on ', path)
   if (!ready) {
     return
   }
@@ -51,9 +117,7 @@ function executeQueueItem (data) {
 
 function executeAllItems () {
   var beforeLength = Object.keys(queue).length
-  var promises = _.map(queue, function (item, key) {
-    return executeQueueItem(item)
-  })
+  var promises = _.map(queue, item => executeQueueItem(item))
   Promise.all(promises, () => {
     if (beforeLength !== Object.keys(queue).length) {
       executeAllItems()
@@ -61,40 +125,43 @@ function executeAllItems () {
   })
 }
 
-function handleChange (path) {
-  mavenmonPomParser(path).then(function (data) {
-    data.path = path
-    queue[data.dir] = data
-    executeAllItems()
-  })
+// on change, register the item on the queue and execute all items
+function handleChange (type) {
+  return function (path) {
+    logger.info(type, path)
+    mavenmonPomParser(path).then(function (data) {
+      data.path = path
+      data.type = type
+      queue[data.dir] = data
+      executeAllItems()
+    })
+  }
 }
 
-function echoEvent (event, filepath) {
-  // if ( event !== 'addDir' && event !== 'add') { // too verbose
-  //     console.log('event is :: ', event, filepath)
-  // }
-}
-
-logger.info('starting walk')
-var watchedFiles = require('./get-watched-files')(watchRoot)
-logger.info('watching', watchedFiles.length, 'files')
+logger.debug('starting walk')
+// var watchedFiles = require('./get-watched-files')(watchRoot)
+// logger.debug('watching', watchedFiles.length, 'files')
 
 // One-liner for current directory, ignores .dotfiles
-var watcher = chokidar.watch('someimagineryfile', {
+var watcher = chokidar.watch('.', {
   ignored: function (filepath) {
+    // console.log('should watch', filepath, shouldWatchFolder(filepath))
     return !shouldWatchFolder(filepath)
-  }
+  },
+  usePolling: true // after a lot of investigating.. polling behaves nicer when using `mvn clean`
 }).on('ready', function () {
+  ready = true
+
   setTimeout(function () { // should happen on a different tick or otherwise we will get all the add events.
-    logger.info('adding on change handler')
-    ready = true
-    watcher.on('change', handleChange) // .on('add',handleChange)
+    logger.debug('adding on change handler')
   }, 0)
   setTimeout(function () {
+    watcher.on('change', handleChange('change')).on('add', handleChange('add')).on('unlink', handleChange('unlink')) // 'change' when code changed. 'add' for .class files that were removed with 'clean' and added by 'install'
     logger.info('watching... you can start writing code')
   }, 1000)
 })
-
-watcher.on('all', echoEvent)
-watcher.add(watchedFiles)
+// watcher.on('all', function(type, path){
+//   console.log(type, path);
+// })
+// watcher.add(watchedFiles)
 logger.info('setting up watch for [' + watchRoot + ']  please wait..')
