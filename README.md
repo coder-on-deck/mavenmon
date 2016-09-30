@@ -35,7 +35,7 @@ mavemon some_dir onchange_handler.js --filter file_filter.js
 For example
  
  
-```
+```javascript
 /**
    A change handler that assumes this is a multi module project and runs maven build on relevant artifact when code changes. 
    Otherwise ignores.
@@ -71,7 +71,7 @@ As you can see `onchange_handler.js` must expost a function that receives as a p
 # File filter
 
 For example
-```
+```javascript
 var fs = require('fs')
 var path = require('path')
 
